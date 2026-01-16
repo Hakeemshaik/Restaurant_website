@@ -495,25 +495,25 @@
     controls.innerHTML = `<button onclick="toggleChat()" class="w-full py-4 bg-stone-100 text-stone-400 rounded-2xl font-black uppercase text-xs">Close Concierge</button>`;
 
     // Save to Supabase
-    (async () => {
-        try {
-            const { data, error } = await supabase.from('reservations').insert([{
-                guests: reservationData.guests,
-                time: reservationData.time,
-                name: reservationData.name,
-                contact: reservationData.contact, // make sure this is filled from chatbot
-                code: code,
-                date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
-            }]);
+(async () => {
+    try {
+        const { data, error } = await supabase.from('reservations').insert([{
+            people: reservationData.guests,  // <- renamed
+            time: reservationData.time,
+            name: reservationData.name,
+            code: code
+            // remove contact and date for now
+        }]);
 
-            if (error) throw error;
+        if (error) throw error;
 
-            console.log('Reservation saved:', data);
-        } catch (err) {
-            console.error('Error saving reservation:', err.message);
-            alert('Failed to save reservation. Try again.');
-        }
-    })();
+        console.log('Reservation saved:', data);
+    } catch (err) {
+        console.error('Error saving reservation:', err.message);
+        alert('Failed to save reservation. Try again.');
+    }
+})();
+
 
     // Show SMS-like notification
     showSMSNotification(code);
