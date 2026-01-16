@@ -44,8 +44,8 @@ h1,h2,h3,.serif { font-family:'Playfair Display', serif; }
 
 <script>
 // --- SUPABASE CONFIG ---
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+const supabaseUrl = 'https://wznbuimfljepqokhcwju.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bmJ1aW1mbGplcHFva2hjd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTg4MzcsImV4cCI6MjA4NDEzNDgzN30.2pkz1sHz-4XIvi7N4OIH-F7HHdIJ9M8dphOUTIzV3OE';
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // --- STATE ---
@@ -55,92 +55,115 @@ const TIME_SLOTS = ['17:00', '18:00', '19:00', '20:00', '21:00'];
 
 // --- CHATBOT FUNCTIONS ---
 function toggleChat() {
-  const win = document.getElementById('chat-window');
-  win.style.display = win.style.display === 'none' ? 'block' : 'none';
-  if(win.style.display==='block' && document.getElementById('chat-history').children.length===0) runBotStep();
+    const win = document.getElementById('chat-window');
+    const isOpen = win.style.display !== 'none';
+    win.style.display = isOpen ? 'none' : 'flex';
+    if(!isOpen && document.getElementById('chat-history').children.length === 0) runBotStep();
 }
 
 function addMessage(text, sender='bot') {
-  const hist = document.getElementById('chat-history');
-  const div = document.createElement('div');
-  div.className = sender==='user' ? 'text-right my-2' : 'text-left my-2';
-  div.innerHTML = `<div style="display:inline-block; padding:0.5rem 1rem; border-radius:1rem; background:${sender==='user'?'#f59e0b':'#eee'}; color:${sender==='user'?'white':'black'}">${text}</div>`;
-  hist.appendChild(div);
-  hist.scrollTop = hist.scrollHeight;
+    const hist = document.getElementById('chat-history');
+    const div = document.createElement('div');
+    div.className = `my-2 flex ${sender==='user'?'justify-end':'justify-start'}`;
+    div.innerHTML = `<div class="max-w-[80%] p-4 rounded-2xl ${sender==='user'?'bg-amber-600 text-white':'bg-white text-stone-800 shadow'}">${text}</div>`;
+    hist.appendChild(div);
+    hist.scrollTop = hist.scrollHeight;
 }
 
 function runBotStep() {
-  const controls = document.getElementById('chat-controls');
-  setTimeout(()=> {
-    switch(currentStep) {
-      case 'GREETING':
-        addMessage("Welcome to L'Elixir! Shall we book a table?");
-        controls.innerHTML = `<button onclick="handleBotAction('START')">Begin Reservation</button>`;
-        break;
-      case 'ASK_GUESTS':
-        addMessage("How many guests shall join us?");
-        controls.innerHTML = TIME_SLOTS.map(t=>`<button onclick="handleBotAction('GUESTS', ${t})">${t}</button>`).join(' ');
-        break;
-      case 'ASK_TIME':
-        addMessage("At what time should we expect you?");
-        controls.innerHTML = TIME_SLOTS.map(t=>`<button onclick="handleBotAction('TIME','${t}')">${t}</button>`).join(' ');
-        break;
-      case 'ASK_NAME':
-        addMessage("Under what name shall we hold the reservation?");
-        controls.innerHTML = `<input id="chat-input" placeholder="Full Name"><button onclick="handleBotAction('NAME')">Next</button>`;
-        break;
-      case 'ASK_CONTACT':
-        addMessage("Finally, your email or phone for confirmation?");
-        controls.innerHTML = `<input id="chat-input" placeholder="Email or Phone"><button onclick="handleBotAction('CONTACT')">Confirm</button>`;
-        break;
-      case 'FINISHED':
-        const code = 'RST-' + Math.random().toString(36).substring(2,7).toUpperCase();
-        addMessage(`Reservation Secured! Ref: ${code}`);
-        controls.innerHTML = `<button onclick="toggleChat()">Close</button>`;
-        saveReservation(code);
-        break;
-    }
-  }, 300);
+    const controls = document.getElementById('chat-controls');
+    setTimeout(()=> {
+        switch(currentStep) {
+            case 'GREETING':
+                addMessage("Welcome to L'Elixir! Shall we book a table?");
+                controls.innerHTML = `<button onclick="handleBotAction('START')" class="w-full py-3 bg-stone-900 text-white rounded-2xl font-black uppercase text-xs hover:bg-amber-600">Begin Reservation</button>`;
+                break;
+            case 'ASK_GUESTS':
+                addMessage("How many guests shall join us?");
+                controls.innerHTML = `<div class="grid grid-cols-3 gap-2">${[1,2,3,4,5,6].map(n=>`<button onclick="handleBotAction('GUESTS', ${n})" class="py-3 border border-stone-300 rounded-2xl font-bold hover:border-amber-600">${n}</button>`).join('')}</div>`;
+                break;
+            case 'ASK_TIME':
+                addMessage("At what time should we expect you?");
+                controls.innerHTML = `<div class="grid grid-cols-2 gap-2">${TIME_SLOTS.map(t=>`<button onclick="handleBotAction('TIME','${t}')" class="py-3 border border-stone-300 rounded-2xl font-bold hover:border-amber-600">${t}</button>`).join('')}</div>`;
+                break;
+            case 'ASK_NAME':
+                addMessage("Under what name shall we hold the reservation?");
+                controls.innerHTML = `<div class="flex gap-2"><input id="chat-input" type="text" placeholder="Full Name..." class="flex-grow px-4 py-3 bg-stone-50 rounded-xl outline-none"><button onclick="handleBotAction('NAME')" class="p-4 bg-stone-900 text-white rounded-xl hover:bg-amber-600"><i class="fa-solid fa-arrow-right"></i></button></div>`;
+                break;
+            case 'ASK_CONTACT':
+                addMessage("Finally, your email or phone for confirmation?");
+                controls.innerHTML = `<div class="flex gap-2"><input id="chat-input" type="text" placeholder="Email or Phone..." class="flex-grow px-4 py-3 bg-stone-50 rounded-xl outline-none"><button onclick="handleBotAction('CONTACT')" class="p-4 bg-stone-900 text-white rounded-xl hover:bg-amber-600"><i class="fa-solid fa-check"></i></button></div>`;
+                break;
+            case 'FINISHED':
+                const code = 'RST-' + Math.random().toString(36).substring(2,7).toUpperCase();
+                addMessage(`Reservation Secured!\nRef: ${code}\nWe look forward to welcoming you.`);
+                controls.innerHTML = `<button onclick="toggleChat()" class="w-full py-3 bg-stone-100 text-stone-400 rounded-2xl font-black uppercase text-xs">Close</button>`;
+                saveReservation(code);
+                break;
+        }
+    }, 400);
 }
 
 function handleBotAction(type, value) {
-  const input = document.getElementById('chat-input');
-  switch(type) {
-    case 'START': addMessage("Booking started.",'user'); currentStep='ASK_GUESTS'; break;
-    case 'GUESTS': reservationData.guests=value; addMessage(`${value} guests`,'user'); currentStep='ASK_TIME'; break;
-    case 'TIME': reservationData.time=value; addMessage(value,'user'); currentStep='ASK_NAME'; break;
-    case 'NAME': if(!input.value) return alert('Enter name'); reservationData.name=input.value; addMessage(input.value,'user'); currentStep='ASK_CONTACT'; break;
-    case 'CONTACT': if(!input.value) return alert('Enter contact'); reservationData.contact=input.value; addMessage(input.value,'user'); currentStep='FINISHED'; break;
-  }
-  document.getElementById('chat-controls').innerHTML='';
-  runBotStep();
+    const input = document.getElementById('chat-input');
+    switch(type) {
+        case 'START':
+            addMessage("Booking started.", 'user');
+            currentStep = 'ASK_GUESTS';
+            break;
+        case 'GUESTS':
+            reservationData.guests = value;
+            addMessage(`${value} guests`, 'user');
+            currentStep = 'ASK_TIME';
+            break;
+        case 'TIME':
+            reservationData.time = value;
+            addMessage(value, 'user');
+            currentStep = 'ASK_NAME';
+            break;
+        case 'NAME':
+            if(!input.value) return alert('Please enter your name');
+            reservationData.name = input.value;
+            addMessage(input.value, 'user');
+            currentStep = 'ASK_CONTACT';
+            break;
+        case 'CONTACT':
+            if(!input.value) return alert('Please enter your email or phone');
+            reservationData.contact = input.value;
+            addMessage(input.value, 'user');
+            currentStep = 'FINISHED';
+            break;
+    }
+    document.getElementById('chat-controls').innerHTML='';
+    runBotStep();
 }
 
-// --- SUPABASE INSERT ---
+// --- SAVE TO SUPABASE ---
 async function saveReservation(code) {
-  try {
-    const { data, error } = await supabase.from('reservations').insert([{
-      name: reservationData.name,
-      people: reservationData.guests,
-      time: reservationData.time,
-      contact: reservationData.contact,
-      code: code
-    }]);
-    if(error) throw error;
-    console.log('Saved to Supabase:', data);
-  } catch(err) {
-    console.error('Supabase save failed:', err.message);
-  }
-  showSMS(code);
+    try {
+        const { data, error } = await supabase.from('reservations').insert([{
+            name: reservationData.name,
+            people: reservationData.guests,
+            time: reservationData.time,
+            contact: reservationData.contact,
+            code: code
+        }]);
+        if(error) throw error;
+        console.log('Saved to Supabase:', data);
+    } catch(err) {
+        console.error('Supabase save failed:', err.message);
+    }
+    showSMS(code);
 }
 
 function showSMS(code) {
-  const notif = document.getElementById('notification');
-  document.getElementById('notif-text').innerText = `L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}.`;
-  notif.style.display='block';
-  setTimeout(()=>{ notif.style.display='none'; },5000);
+    const notif = document.getElementById('notification');
+    document.getElementById('notif-text').innerText = `L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}.`;
+    notif.style.display='block';
+    setTimeout(()=>{ notif.style.display='none'; },5000);
 }
 </script>
+
 
 </body>
 </html>
