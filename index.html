@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase CDN: This script exposes a global 'supabase' object -->
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -157,13 +157,19 @@
 
     <script>
         /* --- SUPABASE CONFIGURATION --- */
-        const SUPABASE_URL = 'https://wznbuimfljepqokhcwju.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bmJ1aW1mbGplcHFva2hjd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTg4MzcsImV4cCI6MjA4NDEzNDgzN30.2pkz1sHz-4XIvi7N4OIH-F7HHdIJ9M8dphOUTIzV3OE'; 
+        const SUPABASE_URL = 'https://wznbuimfljepqokhcwju.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bmJ1aW1mbGplcHFva2hjd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTg4MzcsImV4cCI6MjA4NDEzNDgzN30.2pkz1sHz-4XIvi7N4OIH-F7HHdIJ9M8dphOUTIzV3OE';
         
-        let supabaseClient;
+        // Use 'sb' to avoid conflicts with global 'supabase' library object
+        let sb;
         
-        if (SUPABASE_URL !== 'https://wznbuimfljepqokhcwju.supabase.co' && typeof supabase !== 'undefined') {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        try {
+            if (typeof supabase !== 'undefined') {
+                sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized');
+            }
+        } catch (e) {
+            console.error('Supabase init error:', e);
         }
 
         /* --- DATA --- */
@@ -181,7 +187,8 @@
         /* --- NAVIGATION --- */
         function navigateTo(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
+            const target = document.getElementById(`page-${pageId}`);
+            if (target) target.classList.add('active');
             window.scrollTo(0, 0);
             initRevealObserver();
         }
@@ -277,38 +284,42 @@
 
         /* --- SUPABASE INSERTION --- */
         async function saveReservation(code) {
-            // Mapped to match provided schema: 
-            // name (text), people (int), time (text), contact (text), code (text)
-            const dataToSave = {
+            // MATCHES SCHEMA: id (uuid), name (text), people (int), time (text), contact (text), code (text), created_at (ts)
+            const payload = {
                 name: reservationData.name,
                 people: parseInt(reservationData.guests),
                 time: reservationData.time,
                 contact: reservationData.contact,
                 code: code
-                // id and created_at handled by Supabase defaults
             };
 
-            // 1. Local Fallback
-            const localRes = JSON.parse(localStorage.getItem('reservations') || '[]');
-            localRes.push({ ...dataToSave, id: Date.now() });
-            localStorage.setItem('reservations', JSON.stringify(localRes));
+            console.log('Preparing to save payload:', payload);
 
-            // 2. SUPABASE INSERTION
-            if (supabaseClient) {
+            // Remote Save to Supabase
+            if (sb) {
                 try {
-                    console.log('Inserting into Supabase:', dataToSave);
-                    const { data, error } = await supabaseClient
+                    const { data, error } = await sb
                         .from('reservations')
-                        .insert([dataToSave]);
+                        .insert([payload]);
                     
-                    if (error) throw error;
-                    console.log('Supabase success:', data);
+                    if (error) {
+                        console.error('Supabase error:', error);
+                    } else {
+                        console.log('Supabase success:', data);
+                    }
                 } catch (err) {
-                    console.error('Supabase error:', err.message);
+                    console.error('Supabase exception:', err);
                 }
             } else {
-                console.warn('Supabase client not initialized.');
+                console.warn('Supabase client (sb) is not available.');
             }
+
+            // Local Fallback
+            try {
+                const localRes = JSON.parse(localStorage.getItem('reservations') || '[]');
+                localRes.push({ ...payload, id: Date.now() });
+                localStorage.setItem('reservations', JSON.stringify(localRes));
+            } catch (e) {}
 
             showConfirmation(code);
         }
@@ -316,7 +327,7 @@
         function showConfirmation(code) {
             const notif = document.getElementById('notification');
             const txt = document.getElementById('notif-text');
-            txt.innerText = `L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}.`;
+            txt.innerText = `L'Elixir: Confirmed for ${reservationData.guests} at ${reservationData.time}. Ref: ${code}.`;
             notif.classList.remove('hidden');
             setTimeout(() => notif.classList.add('hidden'), 6000);
         }
