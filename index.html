@@ -21,6 +21,62 @@
         body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; background-color: var(--bg-stone); color: #1c1917; }
         h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
         
+        /* Preloader Styles */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #1c1917;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s cubic-bezier(0.77, 0, 0.175, 1), visibility 0.8s;
+        }
+        #loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-content {
+            text-align: center;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        .loader-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 900;
+            color: white;
+            letter-spacing: -0.05em;
+            margin-bottom: 1.5rem;
+        }
+        .loader-line-container {
+            width: 180px;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .loader-line {
+            position: absolute;
+            height: 100%;
+            width: 40%;
+            background: #d97706;
+            left: -100%;
+            animation: loaderMove 2s infinite ease-in-out;
+        }
+
+        @keyframes loaderMove {
+            0% { left: -100%; }
+            50% { left: 30%; }
+            100% { left: 100%; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Animations */
         @keyframes revealUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes floating { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
@@ -38,6 +94,7 @@
         .nav-link { position: relative; cursor: pointer; }
         .nav-link::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -4px; left: 0; background-color: #b45309; transition: width 0.3s ease; }
         .nav-link.active::after, .nav-link:hover::after { width: 100%; }
+        .nav-link.active { color: #1c1917 !important; }
 
         .chat-scroll::-webkit-scrollbar { width: 4px; }
         .chat-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
@@ -45,6 +102,21 @@
         .shimmer { position: relative; overflow: hidden; background: #e7e5e4; }
         .shimmer::after { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer-anim 2s infinite; }
         @keyframes shimmer-anim { 100% { left: 100%; } }
+
+        /* Menu Detail Reveal */
+        .menu-detail {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.4s ease-out, opacity 0.4s ease-out;
+            opacity: 0;
+        }
+        .menu-item-card.expanded .menu-detail {
+            grid-template-rows: 1fr;
+            opacity: 1;
+        }
+        .menu-detail-content {
+            overflow: hidden;
+        }
     </style>
 <script type="importmap">
 {
@@ -57,6 +129,17 @@
 </script>
 </head>
 <body class="selection:bg-amber-100 selection:text-amber-900">
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="loader-content">
+            <div class="loader-logo">L'ELIXIR<span class="text-amber-600">.</span></div>
+            <div class="loader-line-container">
+                <div class="loader-line"></div>
+            </div>
+            <div class="mt-4 text-stone-500 text-[10px] uppercase tracking-[0.3em] font-bold">Refining Flavors</div>
+        </div>
+    </div>
 
     <!-- Navigation -->
     <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-100 h-24 flex items-center">
@@ -105,12 +188,29 @@
 
         <!-- MENU PAGE -->
         <section id="page-menu" class="page-content py-24 px-8 max-w-7xl mx-auto">
-            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16"></div>
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-6xl font-serif mb-4">Our Menu</h2>
+                <p class="text-stone-500 font-serif italic">A symphony of seasonal flavors curated for your delight.</p>
+            </div>
+            
+            <!-- Menu Tabs -->
+            <div class="flex flex-wrap justify-center gap-4 mb-16 reveal">
+                <button onclick="renderMenu('Starters')" class="menu-tab-btn px-8 py-3 rounded-full border border-stone-200 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all active" data-category="Starters">Starters</button>
+                <button onclick="renderMenu('Mains')" class="menu-tab-btn px-8 py-3 rounded-full border border-stone-200 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all" data-category="Mains">Mains</button>
+                <button onclick="renderMenu('Desserts')" class="menu-tab-btn px-8 py-3 rounded-full border border-stone-200 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all" data-category="Desserts">Desserts</button>
+                <button onclick="renderMenu('Drinks')" class="menu-tab-btn px-8 py-3 rounded-full border border-stone-200 text-[10px] font-black uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all" data-category="Drinks">Drinks</button>
+            </div>
+
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 transition-opacity duration-500"></div>
         </section>
 
         <!-- GALLERY PAGE -->
         <section id="page-gallery" class="page-content py-24 px-8 max-w-7xl mx-auto">
-            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-6xl font-serif mb-4">Maison Gallery</h2>
+                <p class="text-stone-500 font-serif italic">The atmosphere of refinement in every corner.</p>
+            </div>
+            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
         </section>
 
         <!-- LOCATION PAGE -->
@@ -118,7 +218,17 @@
              <div class="grid lg:grid-cols-2 gap-24 items-center">
                 <div class="reveal">
                     <h2 class="text-6xl font-serif mb-12 tracking-tight">Visit Our Maison</h2>
-                    <p class="text-stone-800 text-2xl font-serif italic">123 Gastronomy Lane, Culinary Arts District<br>Paris, France 75001</p>
+                    <p class="text-stone-800 text-2xl font-serif italic mb-8">123 Gastronomy Lane, Culinary Arts District<br>Paris, France 75001</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <span class="w-12 h-px bg-amber-600"></span>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Open Mon-Sat, 17:00 - late</span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="w-12 h-px bg-amber-600"></span>
+                            <span class="text-[10px] font-black uppercase tracking-widest">+33 1 23 45 67 89</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="h-[500px] rounded-[3rem] overflow-hidden shadow-2xl reveal">
                     <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.75077652008!2d2.292292615674393!3d48.85837360866166!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e2964e34e2d%3A0x8ddca9ee380ef7e0!2sEiffel%20Tower!5e0!3m2!1sen!2sfr!4v1655812345678!5m2!1sen!2sfr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
@@ -160,23 +270,33 @@
         const SUPABASE_URL = 'https://wznbuimfljepqokhcwju.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bmJ1aW1mbGplcHFva2hjd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTg4MzcsImV4cCI6MjA4NDEzNDgzN30.2pkz1sHz-4XIvi7N4OIH-F7HHdIJ9M8dphOUTIzV3OE';
         
-        // Use 'sb' to avoid conflicts with global 'supabase' library object
         let sb;
-        
-        try {
-            if (typeof supabase !== 'undefined') {
-                sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase client initialized');
-            }
-        } catch (e) {
-            console.error('Supabase init error:', e);
-        }
+        try { if (typeof supabase !== 'undefined') { sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } } catch (e) {}
 
         /* --- DATA --- */
-        const MENU_ITEMS = [
-            { id: 1, name: 'Truffle Arancini', price: 22, category: 'Starters', image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=600&q=80' },
-            { id: 2, name: 'Wagyu Beef Ribeye', price: 95, category: 'Mains', image: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&w=600&q=80' },
-            { id: 3, name: 'Valrhona Fondant', price: 18, category: 'Desserts', image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80' }
+        const ALL_MENU_ITEMS = [
+            { id: 1, name: 'Truffle Arancini', description: 'Crispy arborio pearls infused with Perigord black truffle, served with saffron aioli.', price: 22, category: 'Starters', image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=600&q=80' },
+            { id: 2, name: 'Oysters Rockefeller', description: 'Blue Point oysters with spinach purée, Pernod-infused breadcrumbs, and citrus hollandaise.', price: 32, category: 'Starters', image: 'https://images.unsplash.com/photo-1599458252573-56ae36120de1?auto=format&fit=crop&w=600&q=80' },
+            { id: 3, name: 'Wagyu Beef Tartare', description: 'A5 Wagyu hand-cut, cured egg yolk, caper berries, and toasted sourdough.', price: 34, category: 'Starters', image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80' },
+            { id: 4, name: 'Wagyu Beef Ribeye', description: 'Grade A5 Miyazakigyu Wagyu, bone marrow, fondant potatoes, and red wine jus.', price: 115, category: 'Mains', image: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&w=600&q=80' },
+            { id: 5, name: 'Chilean Sea Bass', description: 'Miso-glazed sea bass, forbidden black rice, and ginger-lemongrass emulsion.', price: 54, category: 'Mains', image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80' },
+            { id: 6, name: 'Rack of Lamb', description: 'Herb-crusted lamb, mint pea purée, glazed carrots, and port reduction.', price: 58, category: 'Mains', image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=600&q=80' },
+            { id: 7, name: 'Valrhona Fondant', description: '70% Guanaja chocolate with molten heart, served with Tahitian vanilla chantilly.', price: 18, category: 'Desserts', image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80' },
+            { id: 8, name: 'Lemon Meringue Tart', description: 'Amalfi lemon curd, sable breton, and torched Swiss meringue.', price: 16, category: 'Desserts', image: 'https://images.unsplash.com/photo-1519915028121-7d3463d20b13?auto=format&fit=crop&w=600&q=80' },
+            { id: 9, name: 'Botanist Martini', description: 'Artisanal gin, dry vermouth, 24k gold flakes, and truffle-stuffed olive.', price: 32, category: 'Drinks', image: 'https://images.unsplash.com/photo-1574096079513-d8259312b785?auto=format&fit=crop&w=600&q=80' },
+            { id: 10, name: 'Saffron Negroni', description: 'Saffron-infused gin, barrel-aged sweet vermouth, and Italian bitters.', price: 22, category: 'Drinks', image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80' }
+        ];
+
+        const GALLERY_IMAGES = [
+            'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1550966841-3ee7adac1af8?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1551632432-c735e8399522?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80'
         ];
 
         /* --- STATE --- */
@@ -187,14 +307,79 @@
         /* --- NAVIGATION --- */
         function navigateTo(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
             const target = document.getElementById(`page-${pageId}`);
+            const link = document.querySelector(`.nav-link[data-page="${pageId}"]`);
+            
             if (target) target.classList.add('active');
+            if (link) link.classList.add('active');
+            
             window.scrollTo(0, 0);
             initRevealObserver();
+            
+            if(pageId === 'menu') renderMenu('Starters');
+            if(pageId === 'gallery') renderGallery();
         }
 
         function toggleMobileMenu() {
             document.getElementById('mobile-menu').classList.toggle('translate-x-full');
+        }
+
+        /* --- MENU RENDERING --- */
+        function renderMenu(category) {
+            const grid = document.getElementById('menu-grid');
+            if(!grid) return;
+
+            // Update Tab UI
+            document.querySelectorAll('.menu-tab-btn').forEach(btn => {
+                if(btn.dataset.category === category) {
+                    btn.classList.add('bg-stone-900', 'text-white', 'active');
+                } else {
+                    btn.classList.remove('bg-stone-900', 'text-white', 'active');
+                }
+            });
+
+            grid.style.opacity = '0';
+            
+            setTimeout(() => {
+                const items = ALL_MENU_ITEMS.filter(i => i.category === category);
+                grid.innerHTML = items.map((i, idx) => `
+                    <div class="menu-item-card group reveal cursor-pointer" onclick="this.classList.toggle('expanded')" style="transition-delay: ${idx * 100}ms">
+                        <div class="shimmer aspect-[4/5] rounded-3xl mb-6 overflow-hidden shadow-xl group-hover:shadow-2xl transition-all relative">
+                            <img src="${i.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-stone-900/10 group-hover:bg-transparent transition-colors"></div>
+                        </div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="serif text-3xl italic">${i.name}</h3>
+                            <p class="text-amber-600 font-bold tracking-widest">$${i.price}</p>
+                        </div>
+                        <div class="menu-detail">
+                            <div class="menu-detail-content">
+                                <p class="text-stone-500 text-sm leading-relaxed mb-4">${i.description}</p>
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
+                                    <span class="text-[9px] font-bold uppercase tracking-widest text-stone-400">Selected Ingredients</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                grid.style.opacity = '1';
+                initRevealObserver();
+            }, 300);
+        }
+
+        /* --- GALLERY RENDERING --- */
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            if(!grid) return;
+            grid.innerHTML = GALLERY_IMAGES.map((img, idx) => `
+                <div class="reveal rounded-3xl overflow-hidden aspect-square shimmer shadow-lg hover:shadow-2xl transition-all group" style="transition-delay: ${idx * 100}ms">
+                    <img src="${img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+            `).join('');
+            initRevealObserver();
         }
 
         /* --- CHATBOT LOGIC --- */
@@ -282,9 +467,8 @@
             runBotStep();
         }
 
-        /* --- SUPABASE INSERTION --- */
+        /* --- SUPABASE & LOCALSTORAGE --- */
         async function saveReservation(code) {
-            // MATCHES SCHEMA: id (uuid), name (text), people (int), time (text), contact (text), code (text), created_at (ts)
             const payload = {
                 name: reservationData.name,
                 people: parseInt(reservationData.guests),
@@ -293,28 +477,12 @@
                 code: code
             };
 
-            console.log('Preparing to save payload:', payload);
-
-            // Remote Save to Supabase
             if (sb) {
                 try {
-                    const { data, error } = await sb
-                        .from('reservations')
-                        .insert([payload]);
-                    
-                    if (error) {
-                        console.error('Supabase error:', error);
-                    } else {
-                        console.log('Supabase success:', data);
-                    }
-                } catch (err) {
-                    console.error('Supabase exception:', err);
-                }
-            } else {
-                console.warn('Supabase client (sb) is not available.');
+                    await sb.from('reservations').insert([payload]);
+                } catch (err) {}
             }
 
-            // Local Fallback
             try {
                 const localRes = JSON.parse(localStorage.getItem('reservations') || '[]');
                 localRes.push({ ...payload, id: Date.now() });
@@ -332,7 +500,7 @@
             setTimeout(() => notif.classList.add('hidden'), 6000);
         }
 
-        /* --- INITIALIZATION --- */
+        /* --- UTILS --- */
         function initRevealObserver() {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('active'); });
@@ -341,19 +509,9 @@
         }
 
         window.onload = () => {
-            const grid = document.getElementById('menu-grid');
-            if(grid) {
-                grid.innerHTML = MENU_ITEMS.map(i => `
-                    <div class="group reveal">
-                        <div class="shimmer aspect-[4/5] rounded-3xl mb-6 overflow-hidden shadow-xl group-hover:shadow-2xl transition-all">
-                            <img src="${i.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        </div>
-                        <h3 class="serif text-3xl italic mb-2">${i.name}</h3>
-                        <p class="text-amber-600 font-bold tracking-widest">$${i.price}</p>
-                    </div>
-                `).join('');
-            }
             initRevealObserver();
+            const loader = document.getElementById('loader');
+            setTimeout(() => { loader.classList.add('hidden'); }, 1200);
         };
     </script>
 </body>
