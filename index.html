@@ -262,304 +262,246 @@
         <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-2xl" src="" alt="Zoom">
     </div>
 
-    <script>
-        /* --- MENU DATA --- */
-        const MENU_ITEMS = [
-            { id: 1, name: 'Truffle Arancini', description: 'Arborio pearls infused with black truffle, saffron aioli.', price: 22, category: 'Starters', image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=600&q=80' },
-            { id: 2, name: 'Pan-Seared Scallops', description: 'Hand-dived scallops, emerald pea purée, pancetta crisp.', price: 28, category: 'Starters', image: 'https://images.unsplash.com/photo-1599458252573-56ae36120de1?auto=format&fit=crop&w=600&q=80' },
-            { id: 3, name: 'Wagyu Beef Ribeye', description: 'A5 Miyazakigyu, roasted bone marrow, red wine jus.', price: 95, category: 'Mains', image: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&w=600&q=80' },
-            { id: 4, name: 'Wild Mushroom Risotto', description: 'Acquerello rice, 36-month aged Parmigiano-Reggiano.', price: 38, category: 'Mains', image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80' },
-            { id: 5, name: 'Black Cod Miso', description: '72-hour miso marinade, baby bok choy, dashi foam.', price: 48, category: 'Mains', image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80' },
-            { id: 6, name: 'Valrhona Fondant', description: 'Molten Guanaja center, Tahitian vanilla bean chantilly.', price: 18, category: 'Desserts', image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80' },
-            { id: 7, name: 'Saffron Negroni', description: 'Saffron-macerated gin, barrel-aged sweet vermouth.', price: 22, category: 'Drinks', image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80' },
-            { id: 8, name: 'Native Lobster', description: 'Brandy-infused cream, wild mushrooms, Gruyère gratin.', price: 72, category: 'Mains', image: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?auto=format&fit=crop&w=600&q=80' },
-            { id: 9, name: 'Octopus Carpaccio', description: 'Thinly sliced octopus, citrus vinaigrette, smoked paprika.', price: 26, category: 'Starters', image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80' }
-        ];
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script>
+/* --- SUPABASE SETUP --- */
+// Replace these with your own Supabase project info
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-public-key';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const GALLERY_IMAGES = [
-            'https://images.unsplash.com/photo-1550966841-3ee7adac1af8?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1551632432-c735e8399522?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80'
-        ];
+/* --- MENU & GALLERY DATA --- */
+const MENU_ITEMS = [
+    { id: 1, name: 'Truffle Arancini', description: 'Arborio pearls infused with black truffle, saffron aioli.', price: 22, category: 'Starters', image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=600&q=80' },
+    { id: 2, name: 'Pan-Seared Scallops', description: 'Hand-dived scallops, emerald pea purée, pancetta crisp.', price: 28, category: 'Starters', image: 'https://images.unsplash.com/photo-1599458252573-56ae36120de1?auto=format&fit=crop&w=600&q=80' },
+    { id: 3, name: 'Wagyu Beef Ribeye', description: 'A5 Miyazakigyu, roasted bone marrow, red wine jus.', price: 95, category: 'Mains', image: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&w=600&q=80' },
+    { id: 4, name: 'Wild Mushroom Risotto', description: 'Acquerello rice, 36-month aged Parmigiano-Reggiano.', price: 38, category: 'Mains', image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80' },
+    { id: 5, name: 'Black Cod Miso', description: '72-hour miso marinade, baby bok choy, dashi foam.', price: 48, category: 'Mains', image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80' },
+    { id: 6, name: 'Valrhona Fondant', description: 'Molten Guanaja center, Tahitian vanilla bean chantilly.', price: 18, category: 'Desserts', image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80' },
+    { id: 7, name: 'Saffron Negroni', description: 'Saffron-macerated gin, barrel-aged sweet vermouth.', price: 22, category: 'Drinks', image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80' },
+    { id: 8, name: 'Native Lobster', description: 'Brandy-infused cream, wild mushrooms, Gruyère gratin.', price: 72, category: 'Mains', image: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?auto=format&fit=crop&w=600&q=80' },
+    { id: 9, name: 'Octopus Carpaccio', description: 'Thinly sliced octopus, citrus vinaigrette, smoked paprika.', price: 26, category: 'Starters', image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80' }
+];
 
-        /* --- STATE MANAGEMENT --- */
-        let currentStep = 'GREETING';
-        let reservationData = { guests: 0, time: '', name: '', contact: '' };
-        const MAX_TABLES = 5;
-        const TIME_SLOTS = ['17:00', '18:00', '19:00', '20:00', '21:00'];
+const GALLERY_IMAGES = [
+    'https://images.unsplash.com/photo-1550966841-3ee7adac1af8?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1551632432-c735e8399522?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80'
+];
 
-        /* --- NAVIGATION --- */
-        function navigateTo(pageId) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            
-            document.querySelectorAll('.nav-link').forEach(l => {
-                l.classList.toggle('active', l.getAttribute('data-page') === pageId);
-            });
-            window.scrollTo(0, 0);
-            initRevealObserver();
-        }
+/* --- STATE --- */
+let currentStep = 'GREETING';
+let reservationData = { guests: 0, time: '', name: '', contact: '' };
+const MAX_TABLES = 5;
+const TIME_SLOTS = ['17:00', '18:00', '19:00', '20:00', '21:00'];
 
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('translate-x-full');
-        }
+/* --- NAVIGATION --- */
+function navigateTo(pageId) {
+    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+    document.getElementById(`page-${pageId}`).classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.toggle('active', l.getAttribute('data-page') === pageId);
+    });
+    window.scrollTo(0, 0);
+    initRevealObserver();
+}
 
-        /* --- MENU RENDERING --- */
-        function renderMenu(category = 'All') {
-            const grid = document.getElementById('menu-grid');
-            const items = category === 'All' ? MENU_ITEMS : MENU_ITEMS.filter(i => i.category === category);
-            
-            grid.innerHTML = items.map((item, idx) => `
-                <div class="group reveal" style="transition-delay: ${idx * 100}ms">
-                    <div class="shimmer aspect-[4/5] rounded-3xl mb-8 relative group-hover:shadow-2xl transition-all duration-700">
-                        <img src="${item.image}" class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" alt="${item.name}">
-                        <div class="absolute top-8 left-8 bg-white/95 px-5 py-2 text-xs font-black rounded-xl shadow-md">$${item.price}</div>
-                    </div>
-                    <div class="px-2">
-                        <div class="flex items-center space-x-4 mb-4">
-                            <div class="h-px flex-grow bg-stone-200"></div>
-                            <span class="text-[9px] font-black uppercase text-amber-600 tracking-widest">${item.category}</span>
-                        </div>
-                        <h3 class="text-3xl font-serif mb-3 group-hover:text-amber-700 transition-colors italic">${item.name}</h3>
-                        <p class="text-stone-500 text-sm font-light">${item.description}</p>
-                    </div>
+/* --- MENU & GALLERY --- */
+function renderMenu(category = 'All') {
+    const grid = document.getElementById('menu-grid');
+    const items = category === 'All' ? MENU_ITEMS : MENU_ITEMS.filter(i => i.category === category);
+    grid.innerHTML = items.map((item, idx) => `
+        <div class="group reveal" style="transition-delay: ${idx*100}ms">
+            <div class="shimmer aspect-[4/5] rounded-3xl mb-8 relative group-hover:shadow-2xl transition-all duration-700">
+                <img src="${item.image}" class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" alt="${item.name}">
+                <div class="absolute top-8 left-8 bg-white/95 px-5 py-2 text-xs font-black rounded-xl shadow-md">$${item.price}</div>
+            </div>
+            <div class="px-2">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="h-px flex-grow bg-stone-200"></div>
+                    <span class="text-[9px] font-black uppercase text-amber-600 tracking-widest">${item.category}</span>
                 </div>
-            `).join('');
-            initRevealObserver();
+                <h3 class="text-3xl font-serif mb-3 group-hover:text-amber-700 transition-colors italic">${item.name}</h3>
+                <p class="text-stone-500 text-sm font-light">${item.description}</p>
+            </div>
+        </div>
+    `).join('');
+    initRevealObserver();
+}
+
+function filterMenu(cat) {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('bg-stone-900', btn.innerText === cat);
+        btn.classList.toggle('text-white', btn.innerText === cat);
+        btn.classList.toggle('shadow-xl', btn.innerText === cat);
+    });
+    renderMenu(cat);
+}
+
+function renderGallery() {
+    const grid = document.getElementById('gallery-grid');
+    grid.innerHTML = GALLERY_IMAGES.map((img, idx) => `
+        <div class="aspect-square rounded-3xl overflow-hidden cursor-pointer group shadow-xl reveal" 
+             style="transition-delay: ${idx * 100}ms" onclick="openLightbox('${img}')">
+            <img src="${img}" class="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" alt="Gallery">
+        </div>
+    `).join('');
+    initRevealObserver();
+}
+
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.remove('hidden');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.add('hidden'); }
+
+/* --- CHATBOT --- */
+function toggleChat() {
+    const win = document.getElementById('chat-window');
+    const icon = document.getElementById('chat-icon');
+    const isOpen = !win.classList.contains('hidden');
+    win.classList.toggle('hidden');
+    icon.className = isOpen ? 'fa-solid fa-calendar-check text-3xl' : 'fa-solid fa-xmark text-3xl';
+    if(!isOpen && document.getElementById('chat-history').children.length===0) runBotStep();
+}
+
+function addMessage(text, sender='bot') {
+    const hist = document.getElementById('chat-history');
+    const div = document.createElement('div');
+    div.className = `flex ${sender==='user'?'justify-end':'justify-start'} animate-[revealUp_0.5s_ease-out]`;
+    div.innerHTML = `<div class="max-w-[85%] p-6 rounded-[2rem] text-sm leading-relaxed shadow-sm ${
+        sender==='user'?'bg-amber-600 text-white rounded-br-none shadow-xl':'bg-white text-stone-800 border border-stone-100 rounded-bl-none'
+    }">${text.replace(/\n/g,'<br>')}</div>`;
+    hist.appendChild(div);
+    hist.scrollTop = hist.scrollHeight;
+}
+
+function showTyping() {
+    const hist = document.getElementById('chat-history');
+    const div = document.createElement('div');
+    div.id='typing-indicator';
+    div.className=`flex justify-start animate-pulse`;
+    div.innerHTML=`<div class="bg-white p-5 rounded-3xl rounded-bl-none border border-stone-100 flex space-x-1.5">
+        <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
+        <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
+        <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
+    </div>`;
+    hist.appendChild(div);
+    hist.scrollTop=hist.scrollHeight;
+}
+function removeTyping(){ const el=document.getElementById('typing-indicator'); if(el) el.remove(); }
+
+/* --- BOT LOGIC --- */
+async function runBotStep() {
+    const controls = document.getElementById('chat-controls');
+    showTyping();
+    setTimeout(async () => {
+        removeTyping();
+        switch(currentStep){
+            case 'GREETING':
+                addMessage("Welcome to L'Elixir. I am your concierge. Shall we prepare a table?");
+                controls.innerHTML=`<button onclick="handleBotAction('START')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-amber-600 transition-all">Begin Reservation</button>`;
+                break;
+
+            case 'ASK_GUESTS':
+                addMessage("Superb. For how many guests shall we prepare?");
+                controls.innerHTML=`<div class="grid grid-cols-3 gap-3">${
+                    [1,2,3,4,5,6].map(n=>`<button onclick="handleBotAction('GUESTS',${n})" class="py-4 border border-stone-200 rounded-2xl font-bold hover:border-amber-600 hover:text-amber-600 transition-all">${n}</button>`).join('')
+                }</div>`;
+                break;
+
+            case 'ASK_TIME':
+                addMessage("At what time should the journey begin?");
+                const today = new Date().toISOString().split('T')[0];
+                const { data: reservations=[], error } = await supabase
+                    .from('reservations')
+                    .select('*')
+                    .eq('date', today);
+
+                controls.innerHTML=`<div class="grid grid-cols-2 gap-3">${
+                    TIME_SLOTS.map(time=>{
+                        const booked = reservations.filter(r=>r.time===time).length;
+                        const left = MAX_TABLES - booked;
+                        const isFull = left<=0;
+                        return `<button onclick="${isFull?'':`handleBotAction('TIME','${time}')`}" class="flex flex-col items-center py-3 border rounded-2xl transition-all ${
+                            isFull?'opacity-30 cursor-not-allowed bg-stone-50':'hover:border-amber-600 hover:shadow-lg'
+                        }"><span class="font-black">${time}</span><span class="text-[9px] font-bold text-amber-500">${isFull?'FULL':`${left} tables left`}</span></button>`;
+                    }).join('')
+                }</div>`;
+                break;
+
+            case 'ASK_NAME':
+                addMessage("Excellent. Under what name shall we hold this reservation?");
+                controls.innerHTML=`<div class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="Full Name..." class="flex-grow px-6 py-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600/30">
+                    <button onclick="handleBotAction('NAME')" class="p-5 bg-stone-900 text-white rounded-2xl hover:bg-amber-600"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>`;
+                break;
+
+            case 'ASK_CONTACT':
+                addMessage(`Perfect, ${reservationData.name}. And a contact detail (phone/email)?`);
+                controls.innerHTML=`<div class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="Email or Phone..." class="flex-grow px-6 py-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600/30">
+                    <button onclick="handleBotAction('CONTACT')" class="p-5 bg-stone-900 text-white rounded-2xl hover:bg-amber-600"><i class="fa-solid fa-check"></i></button>
+                </div>`;
+                break;
+
+            case 'FINISHED':
+                const code = 'RST-'+Math.random().toString(36).substring(2,7).toUpperCase();
+                addMessage(`Reservation Secured.\n\nRef: ${code}\nName: ${reservationData.name}\nGuests: ${reservationData.guests}\nTime: ${reservationData.time}\n\nWe anticipate your arrival with pleasure.`);
+                controls.innerHTML=`<button onclick="toggleChat()" class="w-full py-4 bg-stone-100 text-stone-400 rounded-2xl font-black uppercase text-xs">Close Concierge</button>`;
+                await saveReservation(code);
+                showSMSNotification(code);
+                break;
         }
+    },800);
+}
 
-        function filterMenu(cat) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('bg-stone-900', btn.innerText === cat);
-                btn.classList.toggle('text-white', btn.innerText === cat);
-                btn.classList.toggle('shadow-xl', btn.innerText === cat);
-            });
-            renderMenu(cat);
-        }
+function handleBotAction(type,value){
+    const controls=document.getElementById('chat-controls');
+    const input=document.getElementById('chat-input');
+    switch(type){
+        case 'START': addUserMessage("I'd like to book a table."); currentStep='ASK_GUESTS'; break;
+        case 'GUESTS': reservationData.guests=value; addUserMessage(`${value} guests`); currentStep='ASK_TIME'; break;
+        case 'TIME': reservationData.time=value; addUserMessage(value); currentStep='ASK_NAME'; break;
+        case 'NAME': if(!input.value) return; reservationData.name=input.value; addUserMessage(input.value); currentStep='ASK_CONTACT'; break;
+        case 'CONTACT': if(!input.value) return; reservationData.contact=input.value; addUserMessage(input.value); currentStep='FINISHED'; break;
+    }
+    controls.innerHTML='';
+    runBotStep();
+}
+function addUserMessage(text){ addMessage(text,'user'); }
 
-        /* --- GALLERY RENDERING --- */
-        function renderGallery() {
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = GALLERY_IMAGES.map((img, idx) => `
-                <div class="aspect-square rounded-3xl overflow-hidden cursor-pointer group shadow-xl reveal" 
-                     style="transition-delay: ${idx * 100}ms" onclick="openLightbox('${img}')">
-                    <img src="${img}" class="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" alt="Gallery">
-                </div>
-            `).join('');
-            initRevealObserver();
-        }
+async function saveReservation(code){
+    reservationData.code=code;
+    reservationData.date=new Date().toISOString().split('T')[0];
+    const { data,error } = await supabase.from('reservations').insert([reservationData]);
+    if(error) console.error('Supabase insert error:',error);
+}
 
-        function openLightbox(src) {
-            document.getElementById('lightbox-img').src = src;
-            document.getElementById('lightbox').classList.remove('hidden');
-        }
+function showSMSNotification(code){
+    const notif=document.getElementById('notification');
+    const txt=document.getElementById('notif-text');
+    txt.innerText=`L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}. See you then!`;
+    notif.classList.remove('hidden');
+    setTimeout(()=>notif.classList.add('hidden'),6000);
+}
 
-        function closeLightbox() {
-            document.getElementById('lightbox').classList.add('hidden');
-        }
+/* --- REVEAL ANIMATION --- */
+function initRevealObserver(){
+    const observer=new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{ if(entry.isIntersecting) entry.target.classList.add('active'); });
+    }, { threshold:0.2 });
+    document.querySelectorAll('.reveal').forEach(e=>observer.observe(e));
+}
 
-        /* --- CHATBOT ENGINE --- */
-        function toggleChat() {
-            const win = document.getElementById('chat-window');
-            const icon = document.getElementById('chat-icon');
-            const isOpen = !win.classList.contains('hidden');
-            
-            win.classList.toggle('hidden');
-            icon.className = isOpen ? 'fa-solid fa-calendar-check text-3xl' : 'fa-solid fa-xmark text-3xl';
-            
-            if (!isOpen && document.getElementById('chat-history').children.length === 0) {
-                runBotStep();
-            }
-        }
-
-        function addMessage(text, sender = 'bot') {
-            const hist = document.getElementById('chat-history');
-            const div = document.createElement('div');
-            div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-[revealUp_0.5s_ease-out]`;
-            div.innerHTML = `
-                <div class="max-w-[85%] p-6 rounded-[2rem] text-sm leading-relaxed shadow-sm ${
-                    sender === 'user' ? 'bg-amber-600 text-white rounded-br-none shadow-xl' : 'bg-white text-stone-800 border border-stone-100 rounded-bl-none'
-                }">
-                    ${text.replace(/\n/g, '<br>')}
-                </div>
-            `;
-            hist.appendChild(div);
-            hist.scrollTop = hist.scrollHeight;
-        }
-
-        function showTyping() {
-            const hist = document.getElementById('chat-history');
-            const div = document.createElement('div');
-            div.id = 'typing-indicator';
-            div.className = `flex justify-start animate-pulse`;
-            div.innerHTML = `
-                <div class="bg-white p-5 rounded-3xl rounded-bl-none border border-stone-100 flex space-x-1.5">
-                    <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
-                    <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
-                    <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
-                </div>
-            `;
-            hist.appendChild(div);
-            hist.scrollTop = hist.scrollHeight;
-        }
-
-        function removeTyping() {
-            const el = document.getElementById('typing-indicator');
-            if (el) el.remove();
-        }
-
-        function runBotStep() {
-            const controls = document.getElementById('chat-controls');
-            showTyping();
-
-            setTimeout(() => {
-                removeTyping();
-                switch(currentStep) {
-                    case 'GREETING':
-                        addMessage("Welcome to L'Elixir. I am your personal concierge. Shall we prepare a table for your arrival?");
-                        controls.innerHTML = `<button onclick="handleBotAction('START')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-amber-600 transition-all">Begin Reservation</button>`;
-                        break;
-                    case 'ASK_GUESTS':
-                        addMessage("Superb. For how many guests shall we prepare?");
-                        controls.innerHTML = `
-                            <div class="grid grid-cols-3 gap-3">
-                                ${[1,2,3,4,5,6].map(n => `<button onclick="handleBotAction('GUESTS', ${n})" class="py-4 border border-stone-200 rounded-2xl font-bold hover:border-amber-600 hover:text-amber-600 transition-all">${n}</button>`).join('')}
-                            </div>
-                        `;
-                        break;
-                    case 'ASK_TIME':
-                        addMessage("At what time should the journey begin?");
-                        const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
-                        const today = new Date().toLocaleDateString();
-                        
-                        controls.innerHTML = `
-                            <div class="grid grid-cols-2 gap-3">
-                                ${TIME_SLOTS.map(time => {
-                                    const booked = reservations.filter(r => r.time === time && r.date === today).length;
-                                    const left = MAX_TABLES - booked;
-                                    const isFull = left <= 0;
-                                    return `
-                                        <button onclick="${isFull ? '' : `handleBotAction('TIME', '${time}')`}" class="flex flex-col items-center py-3 border rounded-2xl transition-all ${isFull ? 'opacity-30 cursor-not-allowed bg-stone-50' : 'hover:border-amber-600 hover:shadow-lg'}">
-                                            <span class="font-black">${time}</span>
-                                            <span class="text-[9px] font-bold text-amber-500">${isFull ? 'FULL' : `${left} tables left`}</span>
-                                        </button>
-                                    `;
-                                }).join('')}
-                            </div>
-                        `;
-                        break;
-                    case 'ASK_NAME':
-                        addMessage("Excellent. Under what name shall we hold this reservation?");
-                        controls.innerHTML = `
-                            <div class="flex gap-2">
-                                <input id="chat-input" type="text" placeholder="Full Name..." class="flex-grow px-6 py-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600/30">
-                                <button onclick="handleBotAction('NAME')" class="p-5 bg-stone-900 text-white rounded-2xl hover:bg-amber-600"><i class="fa-solid fa-arrow-right"></i></button>
-                            </div>
-                        `;
-                        break;
-                    case 'ASK_CONTACT':
-                        addMessage(`Perfect, ${reservationData.name}. And a contact detail (phone/email) for the confirmation message?`);
-                        controls.innerHTML = `
-                            <div class="flex gap-2">
-                                <input id="chat-input" type="text" placeholder="Email or Phone..." class="flex-grow px-6 py-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600/30">
-                                <button onclick="handleBotAction('CONTACT')" class="p-5 bg-stone-900 text-white rounded-2xl hover:bg-amber-600"><i class="fa-solid fa-check"></i></button>
-                            </div>
-                        `;
-                        break;
-                    case 'FINISHED':
-                        const code = 'RST-' + Math.random().toString(36).substring(2, 7).toUpperCase();
-                        addMessage(`Reservation Secured.\n\nRef: ${code}\nName: ${reservationData.name}\nGuests: ${reservationData.guests}\nTime: ${reservationData.time}\n\nWe anticipate your arrival with great pleasure.`);
-                        controls.innerHTML = `<button onclick="toggleChat()" class="w-full py-4 bg-stone-100 text-stone-400 rounded-2xl font-black uppercase text-xs">Close Concierge</button>`;
-                        saveReservation(code);
-                        showSMSNotification(code);
-                        break;
-                }
-            }, 800);
-        }
-
-        function handleBotAction(type, value) {
-            const controls = document.getElementById('chat-controls');
-            const input = document.getElementById('chat-input');
-            
-            switch(type) {
-                case 'START':
-                    addUserMessage("I'd like to book a table.");
-                    currentStep = 'ASK_GUESTS';
-                    break;
-                case 'GUESTS':
-                    reservationData.guests = value;
-                    addUserMessage(`${value} guests`);
-                    currentStep = 'ASK_TIME';
-                    break;
-                case 'TIME':
-                    reservationData.time = value;
-                    addUserMessage(value);
-                    currentStep = 'ASK_NAME';
-                    break;
-                case 'NAME':
-                    if(!input.value) return;
-                    reservationData.name = input.value;
-                    addUserMessage(input.value);
-                    currentStep = 'ASK_CONTACT';
-                    break;
-                case 'CONTACT':
-                    if(!input.value) return;
-                    reservationData.contact = input.value;
-                    addUserMessage(input.value);
-                    currentStep = 'FINISHED';
-                    break;
-            }
-            controls.innerHTML = '';
-            runBotStep();
-        }
-
-        function addUserMessage(text) {
-            addMessage(text, 'user');
-        }
-
-        function saveReservation(code) {
-            const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
-            reservations.push({
-                ...reservationData,
-                code,
-                date: new Date().toLocaleDateString(),
-                id: Date.now()
-            });
-            localStorage.setItem('reservations', JSON.stringify(reservations));
-        }
-
-        function showSMSNotification(code) {
-            const notif = document.getElementById('notification');
-            const txt = document.getElementById('notif-text');
-            txt.innerText = `L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}. See you then!`;
-            notif.classList.remove('hidden');
-            setTimeout(() => notif.classList.add('hidden'), 6000);
-        }
-
-        /* --- UTILS --- */
-        function initRevealObserver() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if(entry.isIntersecting) entry.target.classList.add('active');
-                });
-            }, { threshold: 0.1 });
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-        }
-
-        // Initialize components
-        window.onload = () => {
-            renderMenu();
-            renderGallery();
-            initRevealObserver();
-            // Close mobile menu on resize
-            window.addEventListener('resize', () => {
-                if(window.innerWidth > 768) document.getElementById('mobile-menu').classList.add('translate-x-full');
-            });
-        };
-    </script>
+/* --- INIT --- */
+renderMenu();
+renderGallery();
+initRevealObserver();
+</script>
 </body>
 </html>
