@@ -1,169 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>L'Elixir - Gastronomie d'Excellence</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Elixir - Gastronomie d'Excellence</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase CDN (Assuming you are using this for your client) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --brand-gold: #d4af37; --bg-stone: #fafaf9; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; background-color: var(--bg-stone); color: #1c1917; }
+        h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
+        
+        /* Animations */
+        @keyframes revealUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes floating { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-<!-- Dependencies -->
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .animate-float { animation: floating 3s ease-in-out infinite; }
+        .animate-pulse-gold { animation: pulse-gold 2s infinite; }
+        
+        .page-content { display: none; min-height: 80vh; animation: revealUp 0.6s ease-out forwards; }
+        .page-content.active { display: block; }
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+        .nav-link { position: relative; cursor: pointer; }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -4px; left: 0; background-color: #b45309; transition: width 0.3s ease; }
+        .nav-link.active::after, .nav-link:hover::after { width: 100%; }
 
-<style>
-body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #1c1917; }
-h1,h2,h3,.serif { font-family:'Playfair Display', serif; }
-#chat-window { display: none; width: 420px; max-width: 90vw; position: fixed; bottom: 36px; right: 10px; background:white; border-radius:2.5rem; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:50;}
-#chat-history { max-height:400px; overflow-y:auto; padding:1rem; }
-#chat-controls { padding:1rem; border-top:1px solid #eee; }
-</style>
-</head>
-<body>
-
-<!-- Chatbot Button -->
-<button id="chatbot-toggle" onclick="toggleChat()" class="fixed bottom-10 right-10 w-20 h-20 bg-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center z-50">
-<i class="fa-solid fa-calendar-check text-3xl"></i>
-</button>
-
-<!-- Chatbot Window -->
-<div id="chat-window">
-  <div class="bg-stone-900 p-4 text-white flex justify-between items-center">
-    <div>Concierge d'Elixir</div>
-    <button onclick="toggleChat()">X</button>
-  </div>
-  <div id="chat-history"></div>
-  <div id="chat-controls"></div>
-</div>
-
-<!-- SMS Notification -->
-<div id="notification" style="display:none; position:fixed; top:10px; right:10px; background:#111; color:white; padding:1rem; border-radius:1rem; z-index:100;">
-<p id="notif-text"></p>
-</div>
-
-<script>
-// --- SUPABASE CONFIG ---
-const supabaseUrl = 'https://wznbuimfljepqokhcwju.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bmJ1aW1mbGplcHFva2hjd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTg4MzcsImV4cCI6MjA4NDEzNDgzN30.2pkz1sHz-4XIvi7N4OIH-F7HHdIJ9M8dphOUTIzV3OE';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-// --- STATE ---
-let currentStep = 'GREETING';
-let reservationData = { guests: 0, time: '', name: '', contact: '' };
-const TIME_SLOTS = ['17:00', '18:00', '19:00', '20:00', '21:00'];
-
-// --- CHATBOT FUNCTIONS ---
-function toggleChat() {
-    const win = document.getElementById('chat-window');
-    const isOpen = win.style.display !== 'none';
-    win.style.display = isOpen ? 'none' : 'flex';
-    if(!isOpen && document.getElementById('chat-history').children.length === 0) runBotStep();
-}
-
-function addMessage(text, sender='bot') {
-    const hist = document.getElementById('chat-history');
-    const div = document.createElement('div');
-    div.className = `my-2 flex ${sender==='user'?'justify-end':'justify-start'}`;
-    div.innerHTML = `<div class="max-w-[80%] p-4 rounded-2xl ${sender==='user'?'bg-amber-600 text-white':'bg-white text-stone-800 shadow'}">${text}</div>`;
-    hist.appendChild(div);
-    hist.scrollTop = hist.scrollHeight;
-}
-
-function runBotStep() {
-    const controls = document.getElementById('chat-controls');
-    setTimeout(()=> {
-        switch(currentStep) {
-            case 'GREETING':
-                addMessage("Welcome to L'Elixir! Shall we book a table?");
-                controls.innerHTML = `<button onclick="handleBotAction('START')" class="w-full py-3 bg-stone-900 text-white rounded-2xl font-black uppercase text-xs hover:bg-amber-600">Begin Reservation</button>`;
-                break;
-            case 'ASK_GUESTS':
-                addMessage("How many guests shall join us?");
-                controls.innerHTML = `<div class="grid grid-cols-3 gap-2">${[1,2,3,4,5,6].map(n=>`<button onclick="handleBotAction('GUESTS', ${n})" class="py-3 border border-stone-300 rounded-2xl font-bold hover:border-amber-600">${n}</button>`).join('')}</div>`;
-                break;
-            case 'ASK_TIME':
-                addMessage("At what time should we expect you?");
-                controls.innerHTML = `<div class="grid grid-cols-2 gap-2">${TIME_SLOTS.map(t=>`<button onclick="handleBotAction('TIME','${t}')" class="py-3 border border-stone-300 rounded-2xl font-bold hover:border-amber-600">${t}</button>`).join('')}</div>`;
-                break;
-            case 'ASK_NAME':
-                addMessage("Under what name shall we hold the reservation?");
-                controls.innerHTML = `<div class="flex gap-2"><input id="chat-input" type="text" placeholder="Full Name..." class="flex-grow px-4 py-3 bg-stone-50 rounded-xl outline-none"><button onclick="handleBotAction('NAME')" class="p-4 bg-stone-900 text-white rounded-xl hover:bg-amber-600"><i class="fa-solid fa-arrow-right"></i></button></div>`;
-                break;
-            case 'ASK_CONTACT':
-                addMessage("Finally, your email or phone for confirmation?");
-                controls.innerHTML = `<div class="flex gap-2"><input id="chat-input" type="text" placeholder="Email or Phone..." class="flex-grow px-4 py-3 bg-stone-50 rounded-xl outline-none"><button onclick="handleBotAction('CONTACT')" class="p-4 bg-stone-900 text-white rounded-xl hover:bg-amber-600"><i class="fa-solid fa-check"></i></button></div>`;
-                break;
-            case 'FINISHED':
-                const code = 'RST-' + Math.random().toString(36).substring(2,7).toUpperCase();
-                addMessage(`Reservation Secured!\nRef: ${code}\nWe look forward to welcoming you.`);
-                controls.innerHTML = `<button onclick="toggleChat()" class="w-full py-3 bg-stone-100 text-stone-400 rounded-2xl font-black uppercase text-xs">Close</button>`;
-                saveReservation(code);
-                break;
-        }
-    }, 400);
-}
-
-function handleBotAction(type, value) {
-    const input = document.getElementById('chat-input');
-    switch(type) {
-        case 'START':
-            addMessage("Booking started.", 'user');
-            currentStep = 'ASK_GUESTS';
-            break;
-        case 'GUESTS':
-            reservationData.guests = value;
-            addMessage(`${value} guests`, 'user');
-            currentStep = 'ASK_TIME';
-            break;
-        case 'TIME':
-            reservationData.time = value;
-            addMessage(value, 'user');
-            currentStep = 'ASK_NAME';
-            break;
-        case 'NAME':
-            if(!input.value) return alert('Please enter your name');
-            reservationData.name = input.value;
-            addMessage(input.value, 'user');
-            currentStep = 'ASK_CONTACT';
-            break;
-        case 'CONTACT':
-            if(!input.value) return alert('Please enter your email or phone');
-            reservationData.contact = input.value;
-            addMessage(input.value, 'user');
-            currentStep = 'FINISHED';
-            break;
-    }
-    document.getElementById('chat-controls').innerHTML='';
-    runBotStep();
-}
-
-// --- SAVE TO SUPABASE ---
-async function saveReservation(code) {
-    try {
-        const { data, error } = await supabase.from('reservations').insert([{
-            name: reservationData.name,
-            people: reservationData.guests,
-            time: reservationData.time,
-            contact: reservationData.contact,
-            code: code
-        }]);
-        if(error) throw error;
-        console.log('Saved to Supabase:', data);
-    } catch(err) {
-        console.error('Supabase save failed:', err.message);
-    }
-    showSMS(code);
-}
-
-function showSMS(code) {
-    const notif = document.getElementById('notification');
-    document.getElementById('notif-text').innerText = `L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}.`;
-    notif.style.display='block';
-    setTimeout(()=>{ notif.style.display='none'; },5000);
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        
+        .shimmer { position: relative; overflow: hidden; background: #e7e5e4; }
+        .shimmer::after { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer-anim 2s infinite; }
+        @keyframes shimmer-anim { 100% { left: 100%; } }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
 }
 </script>
+</head>
+<body class="selection:bg-amber-100 selection:text-amber-900">
 
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-100 h-24 flex items-center">
+        <div class="max-w-7xl mx-auto px-8 w-full flex items-center justify-between">
+            <div class="text-3xl font-serif font-black tracking-tighter cursor-pointer" onclick="navigateTo('home')">
+                L'ELIXIR<span class="text-amber-600">.</span>
+            </div>
+            <div class="hidden md:flex space-x-12 items-center">
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900 active" data-page="home" onclick="navigateTo('home')">Home</span>
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900" data-page="menu" onclick="navigateTo('menu')">Menu</span>
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900" data-page="gallery" onclick="navigateTo('gallery')">Gallery</span>
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900" data-page="contact" onclick="navigateTo('contact')">Location</span>
+                <button onclick="toggleChat()" class="px-6 py-2.5 bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-amber-600 transition-all">Book Now</button>
+            </div>
+            <button class="md:hidden text-stone-900" onclick="toggleMobileMenu()">
+                <i class="fa-solid fa-bars-staggered text-2xl"></i>
+            </button>
+        </div>
+    </nav>
 
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] bg-stone-900 text-white p-12 transform translate-x-full transition-transform duration-500 flex flex-col justify-center space-y-8">
+        <button class="absolute top-10 right-10 text-3xl" onclick="toggleMobileMenu()">&times;</button>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('home'); toggleMobileMenu()">Home</span>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('menu'); toggleMobileMenu()">Menu</span>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('gallery'); toggleMobileMenu()">Gallery</span>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('contact'); toggleMobileMenu()">Location</span>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- HOME PAGE -->
+        <section id="page-home" class="page-content active">
+            <div class="relative h-[90vh] flex items-center justify-center overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1920&q=80" class="absolute inset-0 w-full h-full object-cover brightness-[0.4]" alt="Hero">
+                <div class="relative z-10 text-center px-6 max-w-5xl">
+                    <span class="inline-block text-amber-500 font-bold tracking-[0.5em] text-[10px] uppercase mb-6 opacity-0 animate-[revealUp_1s_forwards]">Gastronomy Redefined</span>
+                    <h1 class="text-7xl md:text-[10rem] font-serif text-white mb-8 tracking-tighter leading-none opacity-0 animate-[revealUp_1s_0.2s_forwards]">L'Elixir<span class="text-amber-600">.</span></h1>
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center items-center opacity-0 animate-[revealUp_1s_0.6s_forwards]">
+                        <button onclick="navigateTo('menu')" class="px-12 py-6 bg-amber-600 text-white font-black uppercase text-xs tracking-widest hover:bg-amber-700 transition-all shadow-2xl">Explore Menu</button>
+                        <button onclick="toggleChat()" class="px-12 py-6 border border-white/30 text-white backdrop-blur-md hover:bg-white hover:text-stone-900 transition-all text-xs font-black uppercase tracking-widest">Reserve a Table</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MENU PAGE -->
+        <section id="page-menu" class="page-content py-24 px-8 max-w-7xl mx-auto">
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16"></div>
+        </section>
+
+        <!-- GALLERY PAGE -->
+        <section id="page-gallery" class="page-content py-24 px-8 max-w-7xl mx-auto">
+            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+        </section>
+
+        <!-- LOCATION PAGE -->
+        <section id="page-contact" class="page-content py-32 px-10 max-w-7xl mx-auto">
+             <div class="grid lg:grid-cols-2 gap-24 items-center">
+                <div class="reveal">
+                    <h2 class="text-6xl font-serif mb-12 tracking-tight">Visit Our Maison</h2>
+                    <p class="text-stone-800 text-2xl font-serif italic">123 Gastronomy Lane, Culinary Arts District<br>Paris, France 75001</p>
+                </div>
+                <div class="h-[500px] rounded-[3rem] overflow-hidden shadow-2xl reveal">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.75077652008!2d2.292292615674393!3d48.85837360866166!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e2964e34e2d%3A0x8ddca9ee380ef7e0!2sEiffel%20Tower!5e0!3m2!1sen!2sfr!4v1655812345678!5m2!1sen!2sfr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-500 py-20 text-center">
+        <p class="text-[10px] uppercase tracking-widest font-bold">&copy; 2024 L'Elixir. All rights reserved.</p>
+    </footer>
+
+    <!-- Chatbot Button -->
+    <button id="chatbot-toggle" onclick="toggleChat()" class="fixed bottom-10 right-10 w-20 h-20 bg-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center z-50 animate-float animate-pulse-gold hover:scale-110 active:scale-95 transition-all">
+        <i id="chat-icon" class="fa-solid fa-calendar-check text-3xl"></i>
+    </button>
+
+    <!-- Chatbot Window -->
+    <div id="chat-window" class="fixed bottom-36 right-10 w-[420px] max-w-[90vw] bg-white rounded-[2.5rem] shadow-2xl z-50 overflow-hidden flex flex-col hidden border border-stone-100">
+        <div class="bg-stone-900 p-8 text-white flex items-center justify-between">
+            <div class="flex items-center space-x-5">
+                <div class="w-12 h-12 rounded-xl bg-amber-600 flex items-center justify-center font-serif font-black text-xl">L</div>
+                <div><p class="font-serif text-lg">Concierge d'Elixir</p></div>
+            </div>
+            <button onclick="toggleChat()" class="text-stone-400 hover:text-white"><i class="fa-solid fa-chevron-down"></i></button>
+        </div>
+        <div id="chat-history" class="flex-grow p-8 overflow-y-auto max-h-[400px] bg-stone-50 chat-scroll space-y-6"></div>
+        <div id="chat-controls" class="p-8 border-t border-stone-50 bg-white min-h-[100px]"></div>
+    </div>
+
+    <!-- SMS Notification -->
+    <div id="notification" class="fixed top-10 right-10 z-[100] bg-stone-900 text-white p-6 rounded-3xl shadow-2xl max-w-sm border-l-8 border-amber-600 hidden animate-[slideInRight_0.5s_ease-out]">
+        <p id="notif-text" class="text-stone-400 text-xs leading-relaxed"></p>
+    </div>
+
+    <script>
+        /* --- CONFIGURATION --- */
+        // Initialize your Supabase client here if not already done in another script
+        // const supabase = supabase.createClient('https://wznbuimfljepqokhcwju.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6bmJ1aW1mbGplcHFva2hjd2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NTg4MzcsImV4cCI6MjA4NDEzNDgzN30.2pkz1sHz-4XIvi7N4OIH-F7HHdIJ9M8dphOUTIzV3OE');
+
+        /* --- DATA --- */
+        const MENU_ITEMS = [
+            { id: 1, name: 'Truffle Arancini', price: 22, category: 'Starters', image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=600&q=80' },
+            { id: 2, name: 'Wagyu Beef Ribeye', price: 95, category: 'Mains', image: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&w=600&q=80' },
+            { id: 3, name: 'Valrhona Fondant', price: 18, category: 'Desserts', image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80' }
+        ];
+
+        /* --- STATE --- */
+        let currentStep = 'GREETING';
+        let reservationData = { guests: 0, time: '', name: '', contact: '' };
+        const TIME_SLOTS = ['17:00', '18:00', '19:00', '20:00', '21:00'];
+
+        /* --- NAVIGATION --- */
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            window.scrollTo(0, 0);
+            initRevealObserver();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('translate-x-full');
+        }
+
+        /* --- CHATBOT LOGIC --- */
+        function toggleChat() {
+            const win = document.getElementById('chat-window');
+            const isOpen = !win.classList.contains('hidden');
+            win.classList.toggle('hidden');
+            if (!isOpen && document.getElementById('chat-history').children.length === 0) runBotStep();
+        }
+
+        function addMessage(text, sender = 'bot') {
+            const hist = document.getElementById('chat-history');
+            const div = document.createElement('div');
+            div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-[revealUp_0.4s]`;
+            div.innerHTML = `<div class="max-w-[85%] p-5 rounded-3xl text-sm ${sender === 'user' ? 'bg-amber-600 text-white rounded-br-none' : 'bg-white text-stone-800 shadow-sm rounded-bl-none'}">${text}</div>`;
+            hist.appendChild(div);
+            hist.scrollTop = hist.scrollHeight;
+        }
+
+        function runBotStep() {
+            const controls = document.getElementById('chat-controls');
+            setTimeout(() => {
+                switch(currentStep) {
+                    case 'GREETING':
+                        addMessage("Welcome to L'Elixir. Shall we book a table for your arrival?");
+                        controls.innerHTML = `<button onclick="handleBotAction('START')" class="w-full py-4 bg-stone-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest">Begin Reservation</button>`;
+                        break;
+                    case 'ASK_GUESTS':
+                        addMessage("How many guests shall join us?");
+                        controls.innerHTML = `<div class="grid grid-cols-3 gap-2">${[1,2,3,4,5,6].map(n => `<button onclick="handleBotAction('GUESTS', ${n})" class="py-3 border rounded-xl font-bold hover:border-amber-600">${n}</button>`).join('')}</div>`;
+                        break;
+                    case 'ASK_TIME':
+                        addMessage("At what time should we expect you?");
+                        controls.innerHTML = `<div class="grid grid-cols-2 gap-2">${TIME_SLOTS.map(t => `<button onclick="handleBotAction('TIME', '${t}')" class="py-3 border rounded-xl font-black hover:border-amber-600">${t}</button>`).join('')}</div>`;
+                        break;
+                    case 'ASK_NAME':
+                        addMessage("Under what name shall we hold the reservation?");
+                        controls.innerHTML = `<div class="flex gap-2"><input id="chat-input" type="text" placeholder="Full Name..." class="flex-grow px-4 py-3 bg-stone-50 rounded-xl outline-none" onkeypress="if(event.key==='Enter') handleBotAction('NAME')"><button onclick="handleBotAction('NAME')" class="p-4 bg-stone-900 text-white rounded-xl"><i class="fa-solid fa-arrow-right"></i></button></div>`;
+                        break;
+                    case 'ASK_CONTACT':
+                        addMessage(`Magnificent. Finally, a contact detail (email or phone) for your confirmation?`);
+                        controls.innerHTML = `<div class="flex gap-2"><input id="chat-input" type="text" placeholder="Contact Info..." class="flex-grow px-4 py-3 bg-stone-50 rounded-xl outline-none" onkeypress="if(event.key==='Enter') handleBotAction('CONTACT')"><button onclick="handleBotAction('CONTACT')" class="p-4 bg-stone-900 text-white rounded-xl"><i class="fa-solid fa-check"></i></button></div>`;
+                        break;
+                    case 'FINISHED':
+                        const code = 'RST-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+                        addMessage(`Reservation Secured.\nRef: ${code}\nWe anticipate your arrival.`);
+                        controls.innerHTML = `<button onclick="toggleChat()" class="w-full py-4 bg-stone-100 text-stone-400 rounded-2xl text-xs font-black uppercase">Close</button>`;
+                        saveReservation(code); // Trigger Supabase Insert
+                        break;
+                }
+            }, 600);
+        }
+
+        async function handleBotAction(type, value) {
+            const input = document.getElementById('chat-input');
+            switch(type) {
+                case 'START':
+                    addMessage("Book a table.", 'user');
+                    currentStep = 'ASK_GUESTS';
+                    break;
+                case 'GUESTS':
+                    reservationData.guests = value;
+                    addMessage(`${value} guests`, 'user');
+                    currentStep = 'ASK_TIME';
+                    break;
+                case 'TIME':
+                    reservationData.time = value;
+                    addMessage(value, 'user');
+                    currentStep = 'ASK_NAME';
+                    break;
+                case 'NAME':
+                    if(!input.value) return;
+                    reservationData.name = input.value;
+                    addMessage(input.value, 'user');
+                    currentStep = 'ASK_CONTACT';
+                    break;
+                case 'CONTACT':
+                    if(!input.value) return;
+                    // --- CONTACT SAVED HERE ---
+                    reservationData.contact = input.value;
+                    addMessage(input.value, 'user');
+                    currentStep = 'FINISHED';
+                    break;
+            }
+            document.getElementById('chat-controls').innerHTML = '';
+            runBotStep();
+        }
+
+        /* --- SUPABASE INSERTION --- */
+        async function saveReservation(code) {
+            const dataToSave = {
+                id: Date.now(),
+                name: reservationData.name,
+                guests: reservationData.guests,
+                time: reservationData.time,
+                contact: reservationData.contact,
+                code: code,
+                created_at: new Date().toISOString()
+            };
+
+            // 1. Local Fallback
+            const localRes = JSON.parse(localStorage.getItem('reservations') || '[]');
+            localRes.push(dataToSave);
+            localStorage.setItem('reservations', JSON.stringify(localRes));
+
+            // 2. SUPABASE INSERTION OCCURS HERE
+            if (typeof supabase !== 'undefined') {
+                try {
+                    const { data, error } = await supabase
+                        .from('reservations')
+                        .insert([dataToSave]);
+                    
+                    if (error) throw error;
+                    console.log('Successfully synced to Supabase:', data);
+                } catch (err) {
+                    console.error('Supabase save failed:', err.message);
+                }
+            }
+
+            showSMS(code);
+        }
+
+        function showSMS(code) {
+            const notif = document.getElementById('notification');
+            document.getElementById('notif-text').innerText = `L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}.`;
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 5000);
+        }
+
+        /* --- INITIALIZATION --- */
+        function initRevealObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('active'); });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+
+        window.onload = () => {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = MENU_ITEMS.map(i => `<div class="group reveal"><div class="shimmer aspect-[4/5] rounded-3xl mb-4 overflow-hidden"><img src="${i.image}" class="w-full h-full object-cover"></div><h3 class="serif text-3xl italic">${i.name}</h3><p class="text-amber-600 font-bold">$${i.price}</p></div>`).join('');
+            initRevealObserver();
+        };
+    </script>
 </body>
 </html>
