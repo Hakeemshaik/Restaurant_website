@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Elixir - Gastronomie d'Excellence</title>
+    
+    <!-- Dependencies: Tailwind for layout, FontAwesome for icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --brand-gold: #d4af37; --bg-stone: #fafaf9; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; overflow-x: hidden; background-color: var(--bg-stone); color: #1c1917; }
+        h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
+        
+        /* Custom Animations */
+        @keyframes revealUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes floating { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .animate-float { animation: floating 3s ease-in-out infinite; }
+        .animate-pulse-gold { animation: pulse-gold 2s infinite; }
+        
+        /* Page Transitions */
+        .page-content { display: none; min-height: 80vh; animation: revealUp 0.6s ease-out forwards; }
+        .page-content.active { display: block; }
+
+        /* Navigation underline */
+        .nav-link { position: relative; cursor: pointer; }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -4px; left: 0; background-color: #b45309; transition: width 0.3s ease; }
+        .nav-link.active::after, .nav-link:hover::after { width: 100%; }
+
+        /* Chat scroll customization */
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        
+        /* Shimmer effect for images */
+        .shimmer { position: relative; overflow: hidden; background: #e7e5e4; }
+        .shimmer::after { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer-anim 2s infinite; }
+        @keyframes shimmer-anim { 100% { left: 100%; } }
+    </style>
+</head>
+<body class="selection:bg-amber-100 selection:text-amber-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-100 h-24 flex items-center">
+        <div class="max-w-7xl mx-auto px-8 w-full flex items-center justify-between">
+            <div class="text-3xl font-serif font-black tracking-tighter cursor-pointer" onclick="navigateTo('home')">
+                L'ELIXIR<span class="text-amber-600">.</span>
+            </div>
+            <div class="hidden md:flex space-x-12 items-center">
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900 active" data-page="home" onclick="navigateTo('home')">Home</span>
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900" data-page="menu" onclick="navigateTo('menu')">Menu</span>
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900" data-page="gallery" onclick="navigateTo('gallery')">Gallery</span>
+                <span class="nav-link text-[10px] font-black uppercase tracking-[0.3em] text-stone-400 hover:text-stone-900" data-page="contact" onclick="navigateTo('contact')">Location</span>
+                <button onclick="toggleChat()" class="px-6 py-2.5 bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-amber-600 transition-all">Book Now</button>
+            </div>
+            <button class="md:hidden text-stone-900" onclick="toggleMobileMenu()">
+                <i class="fa-solid fa-bars-staggered text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] bg-stone-900 text-white p-12 transform translate-x-full transition-transform duration-500 flex flex-col justify-center space-y-8">
+        <button class="absolute top-10 right-10 text-3xl" onclick="toggleMobileMenu()">&times;</button>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('home'); toggleMobileMenu()">Home</span>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('menu'); toggleMobileMenu()">Menu</span>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('gallery'); toggleMobileMenu()">Gallery</span>
+        <span class="text-5xl font-serif italic" onclick="navigateTo('contact'); toggleMobileMenu()">Location</span>
+    </div>
+
+    <!-- Main Content Sections -->
+    <main>
+        <!-- HOME PAGE -->
+        <section id="page-home" class="page-content active">
+            <div class="relative h-[90vh] flex items-center justify-center overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1920&q=80" class="absolute inset-0 w-full h-full object-cover brightness-[0.4] scale-110 animate-[pulse_10s_infinite]" alt="Hero">
+                <div class="relative z-10 text-center px-6 max-w-5xl">
+                    <span class="inline-block text-amber-500 font-bold tracking-[0.5em] text-[10px] uppercase mb-6 opacity-0 animate-[revealUp_1s_forwards]">Gastronomy Redefined</span>
+                    <h1 class="text-7xl md:text-[10rem] font-serif text-white mb-8 tracking-tighter leading-none opacity-0 animate-[revealUp_1s_0.2s_forwards]">L'Elixir<span class="text-amber-600">.</span></h1>
+                    <p class="text-xl md:text-3xl text-stone-200 mb-12 font-light tracking-wide max-w-2xl mx-auto opacity-0 animate-[revealUp_1s_0.4s_forwards]">Where time slows down, and every flavor tells a story of <span class="italic font-serif">refined elegance</span>.</p>
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center items-center opacity-0 animate-[revealUp_1s_0.6s_forwards]">
+                        <button onclick="navigateTo('menu')" class="px-12 py-6 bg-amber-600 text-white font-black uppercase text-xs tracking-widest hover:bg-amber-700 transition-all shadow-2xl">Explore Menu</button>
+                        <button onclick="toggleChat()" class="px-12 py-6 border border-white/30 text-white backdrop-blur-md hover:bg-white hover:text-stone-900 transition-all text-xs font-black uppercase tracking-widest">Reserve a Table</button>
+                    </div>
+                </div>
+            </div>
+
+            <section class="py-32 px-10 reveal">
+                <div class="max-w-4xl mx-auto text-center">
+                    <span class="text-amber-600 font-bold tracking-[0.5em] text-[10px] uppercase mb-10 block">Bienvenue</span>
+                    <h2 class="text-6xl font-serif mb-12 tracking-tight">Our Philosophy</h2>
+                    <p class="text-2xl text-stone-600 leading-relaxed font-light italic font-serif">"Gastronomy is the silent language of the soul. At L'Elixir, we don't just cook; we compose symphonies on a plate, using the rarest notes of nature."</p>
+                    <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                        <div>
+                            <div class="text-amber-600 text-4xl mb-4"><i class="fa-solid fa-leaf"></i></div>
+                            <h3 class="font-bold text-xs uppercase tracking-widest mb-2">Organic</h3>
+                            <p class="text-stone-500 text-xs">Farm to table excellence</p>
+                        </div>
+                        <div>
+                            <div class="text-amber-600 text-4xl mb-4"><i class="fa-solid fa-wine-glass"></i></div>
+                            <h3 class="font-bold text-xs uppercase tracking-widest mb-2">Curated</h3>
+                            <p class="text-stone-500 text-xs">A world-class cellar</p>
+                        </div>
+                        <div>
+                            <div class="text-amber-600 text-4xl mb-4"><i class="fa-solid fa-award"></i></div>
+                            <h3 class="font-bold text-xs uppercase tracking-widest mb-2">Michelin</h3>
+                            <p class="text-stone-500 text-xs">Award-winning service</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- MENU PAGE -->
+        <section id="page-menu" class="page-content py-24 px-8 max-w-7xl mx-auto">
+            <div class="text-center mb-24">
+                <span class="text-amber-600 font-bold tracking-[0.5em] text-[10px] uppercase mb-6 block">Selection of Excellence</span>
+                <h2 class="text-6xl md:text-8xl font-serif mb-10 tracking-tight">Our Menu</h2>
+                <div class="w-20 h-1 bg-amber-600 mx-auto mb-10 rounded-full"></div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap justify-center gap-4 mb-20">
+                <button onclick="filterMenu('All')" class="filter-btn px-10 py-4 rounded-full border border-stone-100 text-[10px] font-black uppercase tracking-widest transition-all bg-stone-900 text-white shadow-xl">All</button>
+                <button onclick="filterMenu('Starters')" class="filter-btn px-10 py-4 rounded-full border border-stone-100 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-stone-50">Starters</button>
+                <button onclick="filterMenu('Mains')" class="filter-btn px-10 py-4 rounded-full border border-stone-100 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-stone-50">Mains</button>
+                <button onclick="filterMenu('Desserts')" class="filter-btn px-10 py-4 rounded-full border border-stone-100 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-stone-50">Desserts</button>
+                <button onclick="filterMenu('Drinks')" class="filter-btn px-10 py-4 rounded-full border border-stone-100 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-stone-50">Drinks</button>
+            </div>
+
+            <!-- Menu Grid -->
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
+                <!-- Items will be injected by JS -->
+            </div>
+        </section>
+
+        <!-- GALLERY PAGE -->
+        <section id="page-gallery" class="page-content py-24 px-8 max-w-7xl mx-auto">
+            <div class="text-center mb-24">
+                <h2 class="text-6xl font-serif mb-6 tracking-tight">The Atmosphere</h2>
+                <div class="w-16 h-1 bg-amber-600 mx-auto mb-10"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="gallery-grid">
+                <!-- Gallery items injected by JS -->
+            </div>
+        </section>
+
+        <!-- LOCATION PAGE -->
+        <section id="page-contact" class="page-content py-32 px-10 max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-24 items-center">
+                <div class="reveal">
+                    <span class="text-amber-600 font-bold tracking-[0.5em] text-[10px] uppercase mb-6 block">Join Us</span>
+                    <h2 class="text-6xl font-serif mb-12 tracking-tight leading-none">Elegance in Every Detail</h2>
+                    <div class="space-y-12">
+                        <div>
+                            <h3 class="text-stone-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-4">Maison</h3>
+                            <p class="text-stone-800 text-3xl font-serif italic">123 Gastronomy Lane, Culinary Arts District<br>Paris, France 75001</p>
+                        </div>
+                        <div>
+                            <h3 class="text-stone-400 font-bold uppercase tracking-[0.3em] text-[10px] mb-4">Hours</h3>
+                            <ul class="text-stone-800 text-xl space-y-2 font-light">
+                                <li>Lun – Jeu: <span class="text-amber-600 font-bold">17:00 – 22:30</span></li>
+                                <li>Ven – Sam: <span className="text-amber-600 font-bold">17:00 – 00:00</span></li>
+                                <li>Dim: <span class="italic">Privatization Only</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-[600px] rounded-[3rem] overflow-hidden shadow-2xl reveal">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.75077652008!2d2.292292615674393!3d48.85837360866166!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e2964e34e2d%3A0x8ddca9ee380ef7e0!2sEiffel%20Tower!5e0!3m2!1sen!2sfr!4v1655812345678!5m2!1sen!2sfr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-500 py-32 px-10">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-20">
+            <div class="col-span-1 md:col-span-2">
+                <h2 class="text-4xl font-serif text-white mb-8">L'ELIXIR<span class="text-amber-600">.</span></h2>
+                <p class="max-w-md text-lg font-light leading-relaxed italic mb-8">"Where time slows down, and flavors come alive."</p>
+                <div class="flex space-x-6 text-xl">
+                    <a href="#" class="hover:text-amber-500"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="hover:text-amber-500"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="hover:text-amber-500"><i class="fa-brands fa-x-twitter"></i></a>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-white text-xs font-black uppercase tracking-[0.4em] mb-10">Legal</h3>
+                <ul class="space-y-4 text-sm font-light">
+                    <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-white text-xs font-black uppercase tracking-[0.4em] mb-10">Contact</h3>
+                <p class="text-sm mb-2">reservations@lelixir.com</p>
+                <p class="text-sm">+33 (0) 1 23 45 67 89</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-24 pt-10 border-t border-white/5 text-center text-[10px] uppercase tracking-widest font-bold">
+            &copy; 2024 L'Elixir Gastronomie d'Excellence. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Chatbot Button -->
+    <button id="chatbot-toggle" onclick="toggleChat()" class="fixed bottom-10 right-10 w-20 h-20 bg-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center z-50 animate-float animate-pulse-gold hover:scale-110 active:scale-95 transition-all">
+        <i id="chat-icon" class="fa-solid fa-calendar-check text-3xl"></i>
+    </button>
+
+    <!-- Chatbot Window -->
+    <div id="chat-window" class="fixed bottom-36 right-10 w-[420px] max-w-[90vw] bg-white rounded-[2.5rem] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.5)] z-50 overflow-hidden flex flex-col hidden border border-stone-100">
+        <!-- Header -->
+        <div class="bg-stone-900 p-8 text-white flex items-center justify-between">
+            <div class="flex items-center space-x-5">
+                <div class="w-14 h-14 rounded-2xl bg-amber-600 flex items-center justify-center font-serif font-black text-2xl rotate-3 shadow-inner">L</div>
+                <div>
+                    <p class="font-serif text-xl tracking-tight">Concierge d'Elixir</p>
+                    <p class="text-[9px] text-amber-500 font-black uppercase tracking-widest mt-1 animate-pulse"><i class="fa-solid fa-circle mr-2 text-[6px]"></i> Ready to Assist</p>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="text-stone-400 hover:text-white text-xl transition-colors"><i class="fa-solid fa-chevron-down"></i></button>
+        </div>
+
+        <!-- Chat History -->
+        <div id="chat-history" class="flex-grow p-8 overflow-y-auto max-h-[450px] bg-stone-50 chat-scroll space-y-8">
+            <!-- Messages injected here -->
+        </div>
+
+        <!-- Interaction Area -->
+        <div id="chat-controls" class="p-8 border-t border-stone-50 bg-white min-h-[120px]">
+            <!-- Dynamic controls injected here -->
+        </div>
+    </div>
+
+    <!-- Notification / Simulated SMS -->
+    <div id="notification" class="fixed top-10 right-10 z-[100] bg-stone-900 text-white p-6 rounded-3xl shadow-2xl max-w-sm border-l-8 border-amber-600 hidden animate-[slideInRight_0.5s_ease-out]">
+        <div class="flex items-start space-x-4">
+            <div class="text-amber-500 text-2xl mt-1"><i class="fa-solid fa-envelope-open-text"></i></div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-2">Incoming Message</p>
+                <p class="text-sm font-serif italic mb-2">Reservation Secured</p>
+                <p id="notif-text" class="text-stone-400 text-xs leading-relaxed">Your table at L'Elixir is confirmed. Ref: RST-X92F1.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-stone-900/98 backdrop-blur-2xl hidden flex items-center justify-center p-8" onclick="closeLightbox()">
+        <button class="absolute top-10 right-10 text-white text-4xl font-light">&times;</button>
+        <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-2xl" src="" alt="Zoom">
+    </div>
+
+    <script>
+        /* --- MENU DATA --- */
+        const MENU_ITEMS = [
+            { id: 1, name: 'Truffle Arancini', description: 'Arborio pearls infused with black truffle, saffron aioli.', price: 22, category: 'Starters', image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=600&q=80' },
+            { id: 2, name: 'Pan-Seared Scallops', description: 'Hand-dived scallops, emerald pea purée, pancetta crisp.', price: 28, category: 'Starters', image: 'https://images.unsplash.com/photo-1599458252573-56ae36120de1?auto=format&fit=crop&w=600&q=80' },
+            { id: 3, name: 'Wagyu Beef Ribeye', description: 'A5 Miyazakigyu, roasted bone marrow, red wine jus.', price: 95, category: 'Mains', image: 'https://images.unsplash.com/photo-1546964124-0cce460f38ef?auto=format&fit=crop&w=600&q=80' },
+            { id: 4, name: 'Wild Mushroom Risotto', description: 'Acquerello rice, 36-month aged Parmigiano-Reggiano.', price: 38, category: 'Mains', image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80' },
+            { id: 5, name: 'Black Cod Miso', description: '72-hour miso marinade, baby bok choy, dashi foam.', price: 48, category: 'Mains', image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80' },
+            { id: 6, name: 'Valrhona Fondant', description: 'Molten Guanaja center, Tahitian vanilla bean chantilly.', price: 18, category: 'Desserts', image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80' },
+            { id: 7, name: 'Saffron Negroni', description: 'Saffron-macerated gin, barrel-aged sweet vermouth.', price: 22, category: 'Drinks', image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80' },
+            { id: 8, name: 'Native Lobster', description: 'Brandy-infused cream, wild mushrooms, Gruyère gratin.', price: 72, category: 'Mains', image: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?auto=format&fit=crop&w=600&q=80' },
+            { id: 9, name: 'Octopus Carpaccio', description: 'Thinly sliced octopus, citrus vinaigrette, smoked paprika.', price: 26, category: 'Starters', image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80' }
+        ];
+
+        const GALLERY_IMAGES = [
+            'https://images.unsplash.com/photo-1550966841-3ee7adac1af8?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1551632432-c735e8399522?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80'
+        ];
+
+        /* --- STATE MANAGEMENT --- */
+        let currentStep = 'GREETING';
+        let reservationData = { guests: 0, time: '', name: '', contact: '' };
+        const MAX_TABLES = 5;
+        const TIME_SLOTS = ['17:00', '18:00', '19:00', '20:00', '21:00'];
+
+        /* --- NAVIGATION --- */
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.toggle('active', l.getAttribute('data-page') === pageId);
+            });
+            window.scrollTo(0, 0);
+            initRevealObserver();
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('translate-x-full');
+        }
+
+        /* --- MENU RENDERING --- */
+        function renderMenu(category = 'All') {
+            const grid = document.getElementById('menu-grid');
+            const items = category === 'All' ? MENU_ITEMS : MENU_ITEMS.filter(i => i.category === category);
+            
+            grid.innerHTML = items.map((item, idx) => `
+                <div class="group reveal" style="transition-delay: ${idx * 100}ms">
+                    <div class="shimmer aspect-[4/5] rounded-3xl mb-8 relative group-hover:shadow-2xl transition-all duration-700">
+                        <img src="${item.image}" class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110" alt="${item.name}">
+                        <div class="absolute top-8 left-8 bg-white/95 px-5 py-2 text-xs font-black rounded-xl shadow-md">$${item.price}</div>
+                    </div>
+                    <div class="px-2">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="h-px flex-grow bg-stone-200"></div>
+                            <span class="text-[9px] font-black uppercase text-amber-600 tracking-widest">${item.category}</span>
+                        </div>
+                        <h3 class="text-3xl font-serif mb-3 group-hover:text-amber-700 transition-colors italic">${item.name}</h3>
+                        <p class="text-stone-500 text-sm font-light">${item.description}</p>
+                    </div>
+                </div>
+            `).join('');
+            initRevealObserver();
+        }
+
+        function filterMenu(cat) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('bg-stone-900', btn.innerText === cat);
+                btn.classList.toggle('text-white', btn.innerText === cat);
+                btn.classList.toggle('shadow-xl', btn.innerText === cat);
+            });
+            renderMenu(cat);
+        }
+
+        /* --- GALLERY RENDERING --- */
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = GALLERY_IMAGES.map((img, idx) => `
+                <div class="aspect-square rounded-3xl overflow-hidden cursor-pointer group shadow-xl reveal" 
+                     style="transition-delay: ${idx * 100}ms" onclick="openLightbox('${img}')">
+                    <img src="${img}" class="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" alt="Gallery">
+                </div>
+            `).join('');
+            initRevealObserver();
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+        }
+
+        /* --- CHATBOT ENGINE --- */
+        function toggleChat() {
+            const win = document.getElementById('chat-window');
+            const icon = document.getElementById('chat-icon');
+            const isOpen = !win.classList.contains('hidden');
+            
+            win.classList.toggle('hidden');
+            icon.className = isOpen ? 'fa-solid fa-calendar-check text-3xl' : 'fa-solid fa-xmark text-3xl';
+            
+            if (!isOpen && document.getElementById('chat-history').children.length === 0) {
+                runBotStep();
+            }
+        }
+
+        function addMessage(text, sender = 'bot') {
+            const hist = document.getElementById('chat-history');
+            const div = document.createElement('div');
+            div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-[revealUp_0.5s_ease-out]`;
+            div.innerHTML = `
+                <div class="max-w-[85%] p-6 rounded-[2rem] text-sm leading-relaxed shadow-sm ${
+                    sender === 'user' ? 'bg-amber-600 text-white rounded-br-none shadow-xl' : 'bg-white text-stone-800 border border-stone-100 rounded-bl-none'
+                }">
+                    ${text.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            hist.appendChild(div);
+            hist.scrollTop = hist.scrollHeight;
+        }
+
+        function showTyping() {
+            const hist = document.getElementById('chat-history');
+            const div = document.createElement('div');
+            div.id = 'typing-indicator';
+            div.className = `flex justify-start animate-pulse`;
+            div.innerHTML = `
+                <div class="bg-white p-5 rounded-3xl rounded-bl-none border border-stone-100 flex space-x-1.5">
+                    <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
+                    <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
+                    <div class="w-1.5 h-1.5 bg-stone-300 rounded-full"></div>
+                </div>
+            `;
+            hist.appendChild(div);
+            hist.scrollTop = hist.scrollHeight;
+        }
+
+        function removeTyping() {
+            const el = document.getElementById('typing-indicator');
+            if (el) el.remove();
+        }
+
+        function runBotStep() {
+            const controls = document.getElementById('chat-controls');
+            showTyping();
+
+            setTimeout(() => {
+                removeTyping();
+                switch(currentStep) {
+                    case 'GREETING':
+                        addMessage("Welcome to L'Elixir. I am your personal concierge. Shall we prepare a table for your arrival?");
+                        controls.innerHTML = `<button onclick="handleBotAction('START')" class="w-full py-5 bg-stone-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-amber-600 transition-all">Begin Reservation</button>`;
+                        break;
+                    case 'ASK_GUESTS':
+                        addMessage("Superb. For how many guests shall we prepare?");
+                        controls.innerHTML = `
+                            <div class="grid grid-cols-3 gap-3">
+                                ${[1,2,3,4,5,6].map(n => `<button onclick="handleBotAction('GUESTS', ${n})" class="py-4 border border-stone-200 rounded-2xl font-bold hover:border-amber-600 hover:text-amber-600 transition-all">${n}</button>`).join('')}
+                            </div>
+                        `;
+                        break;
+                    case 'ASK_TIME':
+                        addMessage("At what time should the journey begin?");
+                        const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
+                        const today = new Date().toLocaleDateString();
+                        
+                        controls.innerHTML = `
+                            <div class="grid grid-cols-2 gap-3">
+                                ${TIME_SLOTS.map(time => {
+                                    const booked = reservations.filter(r => r.time === time && r.date === today).length;
+                                    const left = MAX_TABLES - booked;
+                                    const isFull = left <= 0;
+                                    return `
+                                        <button onclick="${isFull ? '' : `handleBotAction('TIME', '${time}')`}" class="flex flex-col items-center py-3 border rounded-2xl transition-all ${isFull ? 'opacity-30 cursor-not-allowed bg-stone-50' : 'hover:border-amber-600 hover:shadow-lg'}">
+                                            <span class="font-black">${time}</span>
+                                            <span class="text-[9px] font-bold text-amber-500">${isFull ? 'FULL' : `${left} tables left`}</span>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                        break;
+                    case 'ASK_NAME':
+                        addMessage("Excellent. Under what name shall we hold this reservation?");
+                        controls.innerHTML = `
+                            <div class="flex gap-2">
+                                <input id="chat-input" type="text" placeholder="Full Name..." class="flex-grow px-6 py-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600/30">
+                                <button onclick="handleBotAction('NAME')" class="p-5 bg-stone-900 text-white rounded-2xl hover:bg-amber-600"><i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                        `;
+                        break;
+                    case 'ASK_CONTACT':
+                        addMessage(`Perfect, ${reservationData.name}. And a contact detail (phone/email) for the confirmation message?`);
+                        controls.innerHTML = `
+                            <div class="flex gap-2">
+                                <input id="chat-input" type="text" placeholder="Email or Phone..." class="flex-grow px-6 py-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600/30">
+                                <button onclick="handleBotAction('CONTACT')" class="p-5 bg-stone-900 text-white rounded-2xl hover:bg-amber-600"><i class="fa-solid fa-check"></i></button>
+                            </div>
+                        `;
+                        break;
+                    case 'FINISHED':
+                        const code = 'RST-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+                        addMessage(`Reservation Secured.\n\nRef: ${code}\nName: ${reservationData.name}\nGuests: ${reservationData.guests}\nTime: ${reservationData.time}\n\nWe anticipate your arrival with great pleasure.`);
+                        controls.innerHTML = `<button onclick="toggleChat()" class="w-full py-4 bg-stone-100 text-stone-400 rounded-2xl font-black uppercase text-xs">Close Concierge</button>`;
+                        saveReservation(code);
+                        showSMSNotification(code);
+                        break;
+                }
+            }, 800);
+        }
+
+        function handleBotAction(type, value) {
+            const controls = document.getElementById('chat-controls');
+            const input = document.getElementById('chat-input');
+            
+            switch(type) {
+                case 'START':
+                    addUserMessage("I'd like to book a table.");
+                    currentStep = 'ASK_GUESTS';
+                    break;
+                case 'GUESTS':
+                    reservationData.guests = value;
+                    addUserMessage(`${value} guests`);
+                    currentStep = 'ASK_TIME';
+                    break;
+                case 'TIME':
+                    reservationData.time = value;
+                    addUserMessage(value);
+                    currentStep = 'ASK_NAME';
+                    break;
+                case 'NAME':
+                    if(!input.value) return;
+                    reservationData.name = input.value;
+                    addUserMessage(input.value);
+                    currentStep = 'ASK_CONTACT';
+                    break;
+                case 'CONTACT':
+                    if(!input.value) return;
+                    reservationData.contact = input.value;
+                    addUserMessage(input.value);
+                    currentStep = 'FINISHED';
+                    break;
+            }
+            controls.innerHTML = '';
+            runBotStep();
+        }
+
+        function addUserMessage(text) {
+            addMessage(text, 'user');
+        }
+
+        function saveReservation(code) {
+            const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
+            reservations.push({
+                ...reservationData,
+                code,
+                date: new Date().toLocaleDateString(),
+                id: Date.now()
+            });
+            localStorage.setItem('reservations', JSON.stringify(reservations));
+        }
+
+        function showSMSNotification(code) {
+            const notif = document.getElementById('notification');
+            const txt = document.getElementById('notif-text');
+            txt.innerText = `L'Elixir: Your table for ${reservationData.guests} at ${reservationData.time} is confirmed. Ref: ${code}. See you then!`;
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 6000);
+        }
+
+        /* --- UTILS --- */
+        function initRevealObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) entry.target.classList.add('active');
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+
+        // Initialize components
+        window.onload = () => {
+            renderMenu();
+            renderGallery();
+            initRevealObserver();
+            // Close mobile menu on resize
+            window.addEventListener('resize', () => {
+                if(window.innerWidth > 768) document.getElementById('mobile-menu').classList.add('translate-x-full');
+            });
+        };
+    </script>
+</body>
+</html>
